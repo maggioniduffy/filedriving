@@ -1,6 +1,6 @@
-@import "tailwindcss/base";
-@import "tailwindcss/components";
-@import "tailwindcss/utilities";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 @layer base {
   * {
@@ -449,5 +449,16 @@
   }
   .thumbnail-image {
     @apply size-full object-cover object-center !important;
+  }
+}
+
+
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
   }
 }
