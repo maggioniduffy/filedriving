@@ -17,6 +17,8 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
+import { createAccont } from "@/lib/actions/user.actions";
+import OTPModal from "./OTPModal";
 
 type FormType = "sign-in" | "sign-up";
 
@@ -35,6 +37,7 @@ const authFormSchema = (formType: FormType) => {
 const AuthForm = ({ type }: Props) => {
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [accountId, setAccountId] = useState(null);
 
   const formSchema = authFormSchema(type);
 
@@ -48,6 +51,21 @@ const AuthForm = ({ type }: Props) => {
 
   // 2. Define a submit handler.
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    setIsLoading(true);
+
+    try {
+      const user = await createAccont({
+        fullName: values.fullName || "",
+        email: values.email,
+      });
+
+      setAccountId(user.accountId);
+    } catch (error) {
+      setErrorMessage("Failed to create account");
+    } finally {
+      setIsLoading(false);
+    }
+
     console.log(values);
   };
 
@@ -105,7 +123,7 @@ const AuthForm = ({ type }: Props) => {
             className="form-submit-button"
             disabled={isLoading}
           >
-            {type == "sign-in" ? "Sign In" : "Sign Out"}
+            {type == "sign-in" ? "Sign In" : "Sign Up"}
 
             {isLoading && (
               <Image
@@ -136,7 +154,9 @@ const AuthForm = ({ type }: Props) => {
         </form>
       </Form>
 
-      {/* OTP Verification */}
+      {accountId && (
+        <OTPModal email={form.getValues("email")} accountId={accountId} />
+      )}
     </>
   );
 };
