@@ -1,10 +1,11 @@
 "use server";
 
 import { ID, Query } from "appwrite";
-import { createAdminClient } from "../appwrite";
+import { createAdminClient, createSessionClient } from "../appwrite";
 import { appWriteConfig } from "../appwrite/config";
 import { parseStringify } from "../utils";
 import { cookies } from "next/headers";
+import { avatarPlaceholderUrl } from "@/constants";
 
 interface createAccountDTO {
   fullName: string;
@@ -57,8 +58,7 @@ export const createAccont = async ({ fullName, email }: createAccountDTO) => {
       {
         email,
         fullName,
-        avatar:
-          "https://png.pngtree.com/png-vector/20191101/ourmid/pngtree-cartoon-color-simple-male-avatar-png-image_1934459.jpg",
+        avatar: avatarPlaceholderUrl,
         accountId,
       }
     );
@@ -85,4 +85,19 @@ export const verifySecret = async ({
   } catch (error) {
     handleError(error, "Failed to verify secret");
   }
+};
+
+export const getCurrentUser = async () => {
+  const { databases, account } = await createSessionClient();
+
+  const result = await account.get();
+  const user = await databases.listDocuments(
+    appWriteConfig.databaseId,
+    appWriteConfig.usersCollectionId,
+    [Query.equal("accountId", result.$id)]
+  );
+
+  if (user.total < 0) return null;
+
+  return parseStringify(user.documents[0]);
 };
