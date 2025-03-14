@@ -25,6 +25,9 @@ export const createSessionClient = async () => {
     get databases() {
       return new Databases(client);
     },
+    get avatars() {
+      return new Avatars(client);
+    },
   };
 };
 

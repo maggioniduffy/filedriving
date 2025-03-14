@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
-import { createAccont } from "@/lib/actions/user.actions";
+import { createAccount } from "@/lib/actions/user.actions";
 import OTPModal from "./OTPModal";
 
 type FormType = "sign-in" | "sign-up";
@@ -54,7 +54,7 @@ const AuthForm = ({ type }: Props) => {
     setIsLoading(true);
 
     try {
-      const user = await createAccont({
+      const user = await createAccount({
         fullName: values.fullName || "",
         email: values.email,
       });

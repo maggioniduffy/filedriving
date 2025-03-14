@@ -6,6 +6,10 @@ import { appWriteConfig } from "../appwrite/config";
 import { parseStringify } from "../utils";
 import { cookies } from "next/headers";
 import { avatarPlaceholderUrl } from "@/constants";
+import { redirect } from "next/navigation";
+import { Avatars } from "node-appwrite";
+
+const COOKIE = process.env.COOKIE_NAME! || "appwrite-session";
 
 interface createAccountDTO {
   fullName: string;
@@ -43,7 +47,18 @@ export const sendEmailOTP = async (email: string) => {
   }
 };
 
-export const createAccont = async ({ fullName, email }: createAccountDTO) => {
+function getAvatarUrl(
+  fullName: string,
+  width = 100,
+  height = 100,
+  bgColor = "EA6365"
+) {
+  return `https://cloud.appwrite.io/v1/avatars/initials?name=${encodeURIComponent(
+    fullName
+  )}&width=${width}&height=${height}&background=${bgColor}`;
+}
+
+export const createAccount = async ({ fullName, email }: createAccountDTO) => {
   const existingUser = await getUserByEmail(email);
   const accountId = await sendEmailOTP(email);
 
@@ -51,6 +66,9 @@ export const createAccont = async ({ fullName, email }: createAccountDTO) => {
 
   if (!existingUser) {
     const { databases } = await createAdminClient();
+
+    const avatar = getAvatarUrl(fullName);
+
     await databases.createDocument(
       appWriteConfig.databaseId,
       appWriteConfig.usersCollectionId,
@@ -58,7 +76,7 @@ export const createAccont = async ({ fullName, email }: createAccountDTO) => {
       {
         email,
         fullName,
-        avatar: avatarPlaceholderUrl,
+        avatar,
         accountId,
       }
     );
@@ -74,7 +92,7 @@ export const verifySecret = async ({
   try {
     const { account } = await createAdminClient();
     const session = await account.createSession(accountId, password);
-    (await cookies()).set("appwrite-session", session.secret, {
+    (await cookies()).set(COOKIE, session.secret, {
       path: "/",
       httpOnly: true,
       sameSite: "strict",
@@ -100,4 +118,16 @@ export const getCurrentUser = async () => {
   if (user.total < 0) return null;
 
   return parseStringify(user.documents[0]);
+};
+
+export const signOutUser = async () => {
+  try {
+    const { account } = await createSessionClient();
+    await account.deleteSession("current");
+    (await cookies()).delete(COOKIE);
+  } catch (error) {
+    handleError(error, "Failed to sign out user");
+  } finally {
+    redirect("/sign-in");
+  }
 };
