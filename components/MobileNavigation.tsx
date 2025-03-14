@@ -3,8 +3,6 @@
 import {
   Sheet,
   SheetContent,
-  SheetDescription,
-  SheetHeader,
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
@@ -12,8 +10,26 @@ import {
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
+import { Separator } from "./ui/separator";
+import NavList from "./NavList";
+import FileUploader from "./FileUploader";
+import { Button } from "./ui/button";
 
-const MobileNavigation = () => {
+interface Props {
+  ownerId: string;
+  accountId: string;
+  fullName: string;
+  email: string;
+  avatar: string;
+}
+
+const MobileNavigation = ({
+  ownerId,
+  accountId,
+  avatar,
+  email,
+  fullName,
+}: Props) => {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
   return (
@@ -35,14 +51,43 @@ const MobileNavigation = () => {
             height={30}
           />
         </SheetTrigger>
-        <SheetContent>
-          <SheetHeader>
-            <SheetTitle>Are you absolutely sure?</SheetTitle>
-            <SheetDescription>
-              This action cannot be undone. This will permanently delete your
-              account and remove your data from our servers.
-            </SheetDescription>
-          </SheetHeader>
+        <SheetContent className="shad-sheet h-screen px-3">
+          <SheetTitle>
+            <div className="header-user">
+              <Image
+                src={avatar}
+                alt="avatar"
+                width={44}
+                height={44}
+                className="header-user-avatar"
+              />
+              <div className="sm:hideen lg:block">
+                <p className="subtitle-2 capitalize">{fullName}</p>
+                <p className="caption">{email}</p>
+              </div>
+            </div>
+            <Separator className="mb-4 bg-light-200/20" />
+          </SheetTitle>
+          <nav className="mobile-nav">
+            <NavList type="mobile" />
+          </nav>
+          <Separator className="my-5 bg-light-200/20" />
+          <div className="flex flex-col justify-between gap-5 pb-5">
+            <FileUploader />
+            <Button
+              type="submit"
+              className="mobile-sign-out-button"
+              onClick={() => {}}
+            >
+              <Image
+                src="/assets/icons/logout.svg"
+                alt="logo"
+                width={24}
+                height={24}
+              />
+              <p> Logout </p>
+            </Button>
+          </div>
         </SheetContent>
       </Sheet>
     </header>
