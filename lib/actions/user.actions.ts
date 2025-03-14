@@ -8,6 +8,7 @@ import { cookies } from "next/headers";
 import { avatarPlaceholderUrl } from "@/constants";
 import { redirect } from "next/navigation";
 import { Avatars } from "node-appwrite";
+import { error } from "console";
 
 const COOKIE = process.env.COOKIE_NAME! || "appwrite-session";
 
@@ -129,5 +130,22 @@ export const signOutUser = async () => {
     handleError(error, "Failed to sign out user");
   } finally {
     redirect("/sign-in");
+  }
+};
+
+interface SignInDto {
+  email: string;
+}
+
+export const signInUser = async ({ email }: SignInDto) => {
+  try {
+    const existingUser = await getUserByEmail(email);
+    if (existingUser) {
+      await sendEmailOTP(email);
+      return parseStringify({ accountId: existingUser.accountId });
+    }
+    return parseStringify({ accountId: null, error: "User not found" });
+  } catch (error) {
+    handleError(error, "Failed to sign in user");
   }
 };
